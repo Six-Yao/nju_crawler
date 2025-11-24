@@ -75,7 +75,7 @@ from .config import (
     VECTOR_SYNC_ENABLED,   # 是否同步到向量库
 )
 from .models import Attachments, CrawlItem  # 附件和爬取结果数据结构
-from .storage import database  # SQLite数据库操作
+from storage import database  # 统一数据库操作
 
 
 # 初始化数据库，确保表结构存在

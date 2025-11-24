@@ -1,4 +1,3 @@
-
 """
 爬虫服务 API 路由
 
@@ -12,6 +11,8 @@ from fastapi import APIRouter, HTTPException
 from .models import CrawlRequest, CrawlResponse, ErrorResponse
 # 业务逻辑：实际抓取实现
 from .services import crawl_source
+# 其他 API 路由
+from storage.router import router as records_router
 
 # 创建路由器实例
 router = APIRouter()
@@ -54,3 +55,6 @@ async def crawl_endpoint(payload: CrawlRequest) -> CrawlResponse:
     except RuntimeError as exc:
         # 网络/解析异常，返回 502
         raise HTTPException(status_code=502, detail=str(exc))
+
+# 挂载统一查询 API 路由
+router.include_router(records_router, prefix="/api")

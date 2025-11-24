@@ -250,8 +250,13 @@ def extract_text_content(soup: BeautifulSoup, selector_cfg: Optional[dict]) -> s
         return ""
     content_selector = selector_cfg.get("content")
     if content_selector:
-        nodes = container.select(content_selector)
-        text_chunks = [node.get_text(" ", strip=True) for node in nodes if node]
+        # 优先处理 <p> 标签分段
+        p_nodes = container.select("p")
+        if p_nodes:
+            text_chunks = [p.get_text(" ", strip=True) for p in p_nodes if p]
+        else:
+            nodes = container.select(content_selector)
+            text_chunks = [node.get_text(" ", strip=True) for node in nodes if node]
     else:
         text_chunks = [container.get_text(" ", strip=True)]
     return "\n".join(filter(None, text_chunks))

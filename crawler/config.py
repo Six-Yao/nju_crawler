@@ -52,6 +52,26 @@ TARGET_SOURCES = [
             "type": ".wjj .lj",  # 类型标签
         },
         "detail_selector": "#d-container .wp_articlecontent p",  # 详情页正文选择器
+    },
+    {
+        "id": "bksy_ggxxw",
+        "name": "本科生院-公告信息网",
+        "base_url": "https://jw.nju.edu.cn",
+        "list_url": "https://jw.nju.edu.cn/24774/list1.htm",
+        "max_pages": 1,
+        "headers": {  # 请求头，模拟浏览器
+            "USER_AGENT": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                "(KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0"
+            ),
+            "host": "jw.nju.edu.cn",
+        },
+        "selectors": {  # CSS选择器，定位列表页各字段
+            "item_container": "#wp_news_w6 li.news",  # 每条新闻容器
+            "date": ".news_meta",  # 发布时间
+            "title": ".news_title a",  # 标题
+            "url": ".news_title a",  # 详情页链接
+        },
     }
 ]
 

@@ -185,7 +185,8 @@ def parse_list(html: str, selectors: dict, base_url: str) -> List[dict]:
         date_el = item.select_one(selectors["date"])
         title_el = item.select_one(selectors["title"])
         url_el = item.select_one(selectors["url"])
-        type_el = item.select_one(selectors["type"])
+        type_selector = selectors.get("type")
+        type_el = item.select_one(type_selector) if type_selector else None
 
         full_url = normalize_url(base_url, url_el)
 

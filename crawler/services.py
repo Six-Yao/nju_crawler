@@ -184,7 +184,13 @@ def parse_list(html: str, selectors: dict, base_url: str) -> List[dict]:
     for item in items:
         date_el = item.select_one(selectors["date"])
         title_el = item.select_one(selectors["title"])
-        url_el = item.select_one(selectors["url"])
+        
+        # 处理 URL 选择器为空的情况（链接在容器本身）
+        if not selectors.get("url"):
+            url_el = item
+        else:
+            url_el = item.select_one(selectors["url"])
+
         type_selector = selectors.get("type")
         type_el = item.select_one(type_selector) if type_selector else None
 
@@ -232,6 +238,13 @@ def parse_publish_time(date_str: Optional[str]) -> datetime:
     
     # 确保转换为字符串，处理 API 返回整数的情况
     date_str = str(date_str).strip()
+
+    # 特殊格式处理：DayYear-Month (e.g., "252025-11" -> "2025-11-25")
+    # 这种格式出现在信息管理学院等网站
+    special_match = re.match(r"^(\d{1,2})(\d{4}-\d{2})$", date_str)
+    if special_match:
+        day, year_month = special_match.groups()
+        date_str = f"{year_month}-{day.zfill(2)}"
 
     for fmt in ("%Y-%m-%d", "%Y/%m/%d", "%Y.%m.%d", "%Y%m%d"):
         try:

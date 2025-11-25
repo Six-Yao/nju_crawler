@@ -2,19 +2,51 @@ import asyncio
 import json
 import os
 import sys
+import base64
 from curl_cffi import requests as curl_requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
 # 默认测试配置
-DEFAULT_CONFIG_FILE = "config/sources/sxy.json"
-DEFAULT_SOURCE_ID = "sxy_zxdt"
+DEFAULT_CONFIG_FILE = "config/sources/gjgxxy.json"
+
+def base64_encode(s):
+    return base64.b64encode(str(s).encode('utf-8')).decode('utf-8')
+
+async def fetch_api(url: str, payload: dict, headers: dict):
+    print(f"正在请求 API: {url} ...")
+    # Base64 编码参数
+    encoded_data = {k: base64_encode(v) for k, v in payload.items()}
+    
+    # 确保 Content-Type
+    if "Content-Type" not in headers:
+        headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8"
+
+    async with curl_requests.AsyncSession(impersonate="chrome120", headers=headers) as session:
+        response = await session.post(url, data=encoded_data)
+        print(f"状态码: {response.status_code}")
+        return response.json()
 
 async def fetch_html(url: str, headers: dict = None):
+    # 支持本地文件路径 (以 file:// 开头或绝对路径)
+    if url.startswith("file://") or os.path.exists(url):
+        file_path = url.replace("file://", "")
+        print(f"正在读取本地文件: {file_path} ...")
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                return f.read()
+        except Exception as e:
+            print(f"读取文件失败: {e}")
+            return ""
+
     print(f"正在抓取: {url} ...")
     async with curl_requests.AsyncSession(impersonate="chrome120", headers=headers) as session:
         response = await session.get(url)
         print(f"状态码: {response.status_code}")
+        # 调试：如果抓取到的内容过短，可能是反爬或动态加载
+        if len(response.text) < 1000:
+            print(f"警告: 响应内容过短 ({len(response.text)} 字符)")
+            print(response.text)
         return response.text
 
 def test_list_page(html: str, selectors: dict, base_url: str):
@@ -37,7 +69,11 @@ def test_list_page(html: str, selectors: dict, base_url: str):
         print(f"日期: {date}")
 
         # 提取链接
-        url_el = item.select_one(selectors["url"])
+        if not selectors.get("url"):
+            url_el = item
+        else:
+            url_el = item.select_one(selectors["url"])
+            
         link = url_el.get('href') if url_el else "未找到"
         if link != "未找到":
              link = urljoin(base_url, link)
@@ -99,15 +135,46 @@ def test_detail_page(html: str, detail_selectors: list, base_url: str):
                 src = img.get('src')
                 print(f"图片 {i+1}: {src}")
 
+def test_api_list_page(json_data: dict, selectors: dict, base_url: str):
+    print("\n--- 测试 API 列表页解析 ---")
+    list_key = selectors.get("item_container", "infolist")
+    items = json_data.get(list_key, [])
+    print(f"找到 {len(items)} 个条目")
+
+    for i, item in enumerate(items[:5]):
+        print(f"\n[条目 {i+1}]")
+        
+        title_key = selectors.get("title", "title")
+        title = item.get(title_key, "未找到")
+        print(f"标题: {title}")
+
+        date_key = selectors.get("date", "releasetime")
+        date = item.get(date_key, "未找到")
+        print(f"日期: {date}")
+
+        url_key = selectors.get("url", "url")
+        raw_url = item.get(url_key)
+        link = "未找到"
+        if raw_url:
+            if raw_url.startswith("http"):
+                link = raw_url
+            else:
+                link = urljoin(base_url, raw_url)
+        print(f"链接: {link}")
+
+        if i == 0 and link != "未找到":
+            return link
+    return None
+
 async def main():
     # 获取命令行参数或使用默认值
     config_file = DEFAULT_CONFIG_FILE
-    source_id = DEFAULT_SOURCE_ID
+    target_source_id = None
     
     if len(sys.argv) > 1:
         config_file = sys.argv[1]
     if len(sys.argv) > 2:
-        source_id = sys.argv[2]
+        target_source_id = sys.argv[2]
 
     print(f"加载配置文件: {config_file}")
     try:
@@ -120,33 +187,60 @@ async def main():
         print(f"错误: 文件 {config_file} 不是有效的 JSON")
         return
 
-    # 查找指定的 source
-    target_source = None
-    for source in config_data.get("sources", []):
-        if source["id"] == source_id:
-            target_source = source
-            break
-    
-    if not target_source:
-        print(f"错误: 在配置文件中未找到 ID 为 '{source_id}' 的源")
-        print("可用源 ID:")
+    sources_to_test = []
+    if target_source_id:
+        # 查找指定的 source
         for source in config_data.get("sources", []):
-            print(f" - {source['id']}")
-        return
+            if source["id"] == target_source_id:
+                sources_to_test.append(source)
+                break
+        if not sources_to_test:
+            print(f"错误: 在配置文件中未找到 ID 为 '{target_source_id}' 的源")
+            return
+    else:
+        # 测试所有 source
+        sources_to_test = config_data.get("sources", [])
 
-    print(f"开始测试源: {target_source['name']} ({target_source['id']})")
-    
-    # 测试列表页
-    list_url = target_source["list_url"]
-    headers = target_source.get("headers", {})
-    
-    html = await fetch_html(list_url, headers)
-    first_link = test_list_page(html, target_source["selectors"], target_source["base_url"])
+    print(f"将测试 {len(sources_to_test)} 个源")
 
-    # 测试详情页 (如果列表页解析成功且有链接)
-    if first_link:
-        detail_html = await fetch_html(first_link, headers)
-        test_detail_page(detail_html, config_data.get("detail_selectors", []), target_source["base_url"])
+    for source in sources_to_test:
+        print(f"\n{'='*50}")
+        print(f"开始测试源: {source['name']} ({source['id']})")
+        print(f"{'='*50}")
+        
+        headers = source.get("headers", {})
+        first_link = None
+
+        try:
+            if source.get("type") == "api":
+                # API 模式测试
+                api_url = source.get("api_url")
+                payload = source.get("payload", {})
+                # 构造第一页的 payload
+                current_payload = payload.copy()
+                current_payload["pageno"] = "1"
+                current_payload["hasPage"] = "true"
+
+                json_data = await fetch_api(api_url, current_payload, headers)
+                first_link = test_api_list_page(json_data, source["selectors"], source["base_url"])
+            else:
+                # HTML 模式测试
+                list_url = source["list_url"]
+                html = await fetch_html(list_url, headers)
+                first_link = test_list_page(html, source["selectors"], source["base_url"])
+
+            # 测试详情页 (如果列表页解析成功且有链接)
+            if first_link:
+                print(f"\n正在抓取详情页: {first_link}")
+                detail_html = await fetch_html(first_link, headers)
+                test_detail_page(detail_html, config_data.get("detail_selectors", []), source["base_url"])
+            else:
+                print("\n未获取到有效链接，跳过详情页测试")
+
+        except Exception as e:
+            print(f"测试源 {source['id']} 时发生错误: {e}")
+            import traceback
+            traceback.print_exc()
 
 if __name__ == "__main__":
     asyncio.run(main())

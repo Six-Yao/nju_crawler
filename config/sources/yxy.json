@@ -5,6 +5,7 @@
       "name": "医学院-学院新闻",
       "base_url": "https://med.nju.edu.cn",
       "list_url": "https://med.nju.edu.cn/10653/list.htm",
+      "pagination_mode": "forward",
       "max_pages": 1,
       "headers": {
         "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
@@ -22,6 +23,7 @@
       "name": "医学院-学院公告",
       "base_url": "https://med.nju.edu.cn",
       "list_url": "https://med.nju.edu.cn/10654/list.htm",
+      "pagination_mode": "forward",
       "max_pages": 1,
       "headers": {
         "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",

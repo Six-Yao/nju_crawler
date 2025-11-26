@@ -615,6 +615,33 @@ async def parse_detail_page(html: str, base_url: str, headers: dict) -> tuple[st
 MAX_CONCURRENT_DETAIL_REQUESTS = 5
 
 
+def get_max_page(html: str) -> int:
+    """
+    从HTML中解析最大页码。
+    优先查找 .p_no 元素，提取其中的数字。
+    """
+    soup = BeautifulSoup(html, "lxml")
+    # 查找所有 .p_no 元素
+    page_nodes = soup.select(".p_no")
+    if not page_nodes:
+        # 尝试查找常见的翻页容器
+        page_nodes = soup.select(".pagination a, .pages a, .pb_sys_common a")
+    
+    max_page = 1
+    for node in page_nodes:
+        text = node.get_text(strip=True)
+        # 提取数字
+        match = re.search(r"(\d+)", text)
+        if match:
+            try:
+                page_num = int(match.group(1))
+                if page_num > max_page:
+                    max_page = page_num
+            except ValueError:
+                continue
+    return max_page
+
+
 async def crawl_source(source_id: str) -> List[CrawlItem]:
     """Crawl a configured list page and return normalized CrawlItem records."""
     source_cfg = next((src for src in TARGET_SOURCES if src["id"] == source_id), None)
@@ -622,10 +649,11 @@ async def crawl_source(source_id: str) -> List[CrawlItem]:
         raise ValueError(f"Unknown source id: {source_id}")
 
     max_pages = int(source_cfg.get("max_pages", 1))
+    pagination_mode = source_cfg.get("pagination_mode", "forward")
     entries: List[dict] = []
 
     # 分支处理：API 模式 vs 静态 HTML 模式
-    if source_cfg.get("type") == "api":
+    if pagination_mode == "api" or source_cfg.get("type") == "api":
         api_url = source_cfg.get("api_url")
         base_payload = source_cfg.get("payload", {})
         
@@ -645,7 +673,52 @@ async def crawl_source(source_id: str) -> List[CrawlItem]:
             except RuntimeError as exc:
                 print(f"[WARN] skip API page {page}: {exc}")
                 continue
+    elif pagination_mode == "reverse":
+        # Reverse 模式：先获取第一页（通常是最新页），解析最大页码，然后倒序生成 URL
+        list_url = source_cfg["list_url"]
+        try:
+            # 获取第一页 HTML
+            first_page_html = await fetch_html(list_url, source_cfg["headers"])
+            # 解析第一页条目
+            first_page_entries = parse_list(first_page_html, source_cfg["selectors"], source_cfg["base_url"])
+            entries.extend(first_page_entries)
+            
+            # 获取最大页码
+            max_p = get_max_page(first_page_html)
+            print(f"[INFO] Detected max page for {source_id}: {max_p}")
+            
+            # 生成后续页码 URL (从 max_p - 1 倒序抓取)
+            # 假设 URL 模式: base/name.ext -> base/name/{page}.ext
+            # 例如: xwdt.htm -> xwdt/5.htm, xwdt/4.htm ...
+            if max_pages > 1 and max_p > 1:
+                base_name, ext = list_url.rsplit('.', 1)
+                
+                # 计算需要抓取的页数，受配置的 max_pages 限制
+                pages_to_crawl = min(max_pages - 1, max_p - 1)
+                
+                for i in range(pages_to_crawl):
+                    page_num = max_p - 1 - i
+                    if page_num < 1:
+                        break
+                    
+                    # 构造 URL: .../xwdt/{page_num}.htm
+                    next_url = f"{base_name}/{page_num}.{ext}"
+                    try:
+                        html = await fetch_html(next_url, source_cfg["headers"])
+                        page_entries = parse_list(html, source_cfg["selectors"], source_cfg["base_url"])
+                        if page_entries:
+                            entries.extend(page_entries)
+                        else:
+                            print(f"[INFO] Page {page_num} returned no entries.")
+                    except RuntimeError as exc:
+                        print(f"[WARN] skip page {next_url}: {exc}")
+                        continue
+
+        except RuntimeError as exc:
+            print(f"[WARN] Failed to fetch initial list page {list_url}: {exc}")
+
     else:
+        # Forward 模式 (默认)
         list_urls = build_paginated_urls(source_cfg["list_url"], max_pages)
         for page_number, list_url in enumerate(list_urls, start=1):
             try:

@@ -5,6 +5,7 @@
             "name": "团委-最新动态",
             "base_url": "https://tuanwei.nju.edu.cn",
             "list_url": "https://tuanwei.nju.edu.cn/24480/list.htm",
+            "pagination_mode": "forward",
             "max_pages": 1,
             "headers": {
                 "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
@@ -22,6 +23,7 @@
             "name": "团委-公告通知",
             "base_url": "https://tuanwei.nju.edu.cn",
             "list_url": "https://tuanwei.nju.edu.cn/ggtz/list.htm",
+            "pagination_mode": "forward",
             "max_pages": 1,
             "headers": {
                 "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
@@ -39,6 +41,7 @@
             "name": "团委-学院团讯",
             "base_url": "https://tuanwei.nju.edu.cn",
             "list_url": "https://tuanwei.nju.edu.cn/24473/list.htm",
+            "pagination_mode": "forward",
             "max_pages": 1,
             "headers": {
                 "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
@@ -56,6 +59,7 @@
             "name": "团委-校园媒体",
             "base_url": "https://tuanwei.nju.edu.cn",
             "list_url": "https://tuanwei.nju.edu.cn/xymt/list.htm",
+            "pagination_mode": "forward",
             "max_pages": 1,
             "headers": {
                 "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",

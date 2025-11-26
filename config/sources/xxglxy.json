@@ -5,6 +5,7 @@
             "name": "信息管理学院-公告通知",
             "base_url": "https://im.nju.edu.cn",
             "list_url": "https://im.nju.edu.cn/xwdt/ggtz/xggg.htm",
+            "pagination_mode": "reverse",
             "max_pages": 1,
             "headers": {
                 "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
@@ -22,6 +23,7 @@
             "name": "信息管理学院-教学动态",
             "base_url": "https://im.nju.edu.cn",
             "list_url": "https://im.nju.edu.cn/xwdt/jxdt.htm",
+            "pagination_mode": "reverse",
             "max_pages": 1,
             "headers": {
                 "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
@@ -39,6 +41,7 @@
             "name": "信息管理学院-学术动态",
             "base_url": "https://im.nju.edu.cn",
             "list_url": "https://im.nju.edu.cn/xwdt/xsdt.htm",
+            "pagination_mode": "reverse",
             "max_pages": 1,
             "headers": {
                 "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
@@ -56,6 +59,7 @@
             "name": "信息管理学院-党群工作",
             "base_url": "https://im.nju.edu.cn",
             "list_url": "https://im.nju.edu.cn/xwdt/dqgz.htm",
+            "pagination_mode": "reverse",
             "max_pages": 1,
             "headers": {
                 "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
@@ -73,6 +77,7 @@
             "name": "信息管理学院-招生动态",
             "base_url": "https://im.nju.edu.cn",
             "list_url": "https://im.nju.edu.cn/xwdt/zsdt.htm",
+            "pagination_mode": "reverse",
             "max_pages": 1,
             "headers": {
                 "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
@@ -90,6 +95,7 @@
             "name": "信息管理学院-学工动态",
             "base_url": "https://im.nju.edu.cn",
             "list_url": "https://im.nju.edu.cn/xwdt/xgdt.htm",
+            "pagination_mode": "reverse",
             "max_pages": 1,
             "headers": {
                 "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
@@ -107,6 +113,7 @@
             "name": "信息管理学院-社会服务",
             "base_url": "https://im.nju.edu.cn",
             "list_url": "https://im.nju.edu.cn/xwdt/shfw.htm",
+            "pagination_mode": "reverse",
             "max_pages": 1,
             "headers": {
                 "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
@@ -124,6 +131,7 @@
             "name": "信息管理学院-新闻速递",
             "base_url": "https://im.nju.edu.cn",
             "list_url": "https://im.nju.edu.cn/xwsd.htm",
+            "pagination_mode": "reverse",
             "max_pages": 1,
             "headers": {
                 "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",

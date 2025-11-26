@@ -6,6 +6,7 @@
         "type": "api",
         "base_url": "https://hwxy.nju.edu.cn/syxx",
         "list_url": "https://hwxy.nju.edu.cn/syxx/xw/index.html",
+        "pagination_mode": "api",
         "api_url": "https://hwxy.nju.edu.cn/njdx/openapi/t/info/list.do",
         "max_pages": 5,
         "headers": {
@@ -31,6 +32,7 @@
         "type": "api",
         "base_url": "https://hwxy.nju.edu.cn/syxx",
         "list_url": "https://hwxy.nju.edu.cn/syxx/gg/index.html",
+        "pagination_mode": "api",
         "api_url": "https://hwxy.nju.edu.cn/njdx/openapi/t/info/list.do",
         "max_pages": 5,
         "headers": {

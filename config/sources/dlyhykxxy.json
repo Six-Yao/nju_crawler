@@ -5,6 +5,7 @@
       "name": "地理与海洋科学学院-学院新闻",
       "base_url": "https://sgos.nju.edu.cn",
       "list_url": "https://sgos.nju.edu.cn/8416/list1.htm",
+      "pagination_mode": "forward",
       "max_pages": 1,
       "headers": {
         "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
@@ -22,6 +23,7 @@
       "name": "地理与海洋科学学院-通知公告",
       "base_url": "https://sgos.nju.edu.cn",
       "list_url": "https://sgos.nju.edu.cn/8420/list1.htm",
+      "pagination_mode": "forward",
       "max_pages": 1,
       "headers": {
         "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",

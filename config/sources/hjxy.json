@@ -6,6 +6,7 @@
             "type": "api",
             "base_url": "https://hjxy.nju.edu.cn",
             "list_url": "https://hjxy.nju.edu.cn/sy/xydt/index.html",
+            "pagination_mode": "api",
             "api_url": "https://hjxy.nju.edu.cn/njdx/openapi/t/info/list.do",
             "max_pages": 5,
             "headers": {
@@ -32,6 +33,7 @@
             "type": "api",
             "base_url": "https://hjxy.nju.edu.cn",
             "list_url": "https://hjxy.nju.edu.cn/sy/tzgg/index.html",
+            "pagination_mode": "api",
             "api_url": "https://hjxy.nju.edu.cn/njdx/openapi/t/info/list.do",
             "max_pages": 5,
             "headers": {
@@ -58,6 +60,7 @@
             "type": "api",
             "base_url": "https://hjxy.nju.edu.cn",
             "list_url": "https://hjxy.nju.edu.cn/sy/kjjz/index.html",
+            "pagination_mode": "api",
             "api_url": "https://hjxy.nju.edu.cn/njdx/openapi/t/info/list.do",
             "max_pages": 5,
             "headers": {
@@ -84,6 +87,7 @@
             "type": "api",
             "base_url": "https://hjxy.nju.edu.cn",
             "list_url": "https://hjxy.nju.edu.cn/sy/hdfc/index.html",
+            "pagination_mode": "api",
             "api_url": "https://hjxy.nju.edu.cn/njdx/openapi/t/info/list.do",
             "max_pages": 5,
             "headers": {

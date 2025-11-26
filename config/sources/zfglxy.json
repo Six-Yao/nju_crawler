@@ -6,6 +6,7 @@
         "type": "api",
         "base_url": "https://public.nju.edu.cn",
         "list_url": "https://public.nju.edu.cn/sy/xyxw/index.html",
+        "pagination_mode": "api",
         "api_url": "https://public.nju.edu.cn/njdx/openapi/t/info/list.do",
         "max_pages": 5,
         "headers": {
@@ -32,6 +33,7 @@
         "type": "api",
         "base_url": "https://public.nju.edu.cn",
         "list_url": "https://public.nju.edu.cn/sy/tzgg/index.html",
+        "pagination_mode": "api",
         "api_url": "https://public.nju.edu.cn/njdx/openapi/t/info/list.do",
         "max_pages": 5,
         "headers": {
@@ -58,6 +60,7 @@
         "type": "api",
         "base_url": "https://public.nju.edu.cn",
         "list_url": "https://public.nju.edu.cn/sy/jydt/index.html",
+        "pagination_mode": "api",
         "api_url": "https://public.nju.edu.cn/njdx/openapi/t/info/list.do",
         "max_pages": 5,
         "headers": {
@@ -84,6 +87,7 @@
         "type": "api",
         "base_url": "https://public.nju.edu.cn",
         "list_url": "https://public.nju.edu.cn/sy/xshd/index.html",
+        "pagination_mode": "api",
         "api_url": "https://public.nju.edu.cn/njdx/openapi/t/info/list.do",
         "max_pages": 5,
         "headers": {

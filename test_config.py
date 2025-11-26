@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse, parse_qs
 
 # 默认测试配置
-DEFAULT_CONFIG_FILE = "config/sources/gjgxxy.json"
+DEFAULT_CONFIG_FILE = "config/sources/sxxy.json"
 
 def base64_encode(s):
     return base64.b64encode(str(s).encode('utf-8')).decode('utf-8')
@@ -178,6 +178,44 @@ def test_detail_page(html: str, detail_selectors: list, base_url: str):
                 name = a.get_text(strip=True)
                 print(f"DOC/DOCX {i+1}: {urljoin(base_url,href)}")
 
+def test_wechat_page(html: str):
+    print("\n--- 测试微信公众号文章解析 ---")
+    soup = BeautifulSoup(html, "lxml")
+    
+    if "当前环境异常" in html:
+        print("警告: 检测到微信环境异常")
+        return
+
+    title = soup.find("h1", class_="rich_media_title")
+    print(f"标题: {title.get_text(strip=True) if title else '未找到'}")
+    
+    author = soup.find("a", id="js_name")
+    print(f"作者: {author.get_text(strip=True) if author else '未找到'}")
+    
+    content_div = soup.find("div", class_="rich_media_content")
+    if content_div:
+        text = content_div.get_text("\n", strip=True)[:100] + "..."
+        print(f"正文预览: {text}")
+    else:
+        print("未找到正文")
+        
+    # Regex checks
+    import re
+    from datetime import datetime
+    
+    biz_match = re.search(r'var biz\s*=\s*"(.*?)";', html)
+    if biz_match:
+        print(f"Biz: {biz_match.group(1)}")
+        
+    time_match = re.search(r"var createTime = '(.*?)';", html)
+    if time_match:
+        try:
+            ts = float(time_match.group(1))
+            dt = datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
+            print(f"CreateTime: {dt}")
+        except:
+            print(f"CreateTime (raw): {time_match.group(1)}")
+
 def test_api_list_page(json_data: dict, selectors: dict, base_url: str):
     print("\n--- 测试 API 列表页解析 ---")
     list_key = selectors.get("item_container", "infolist")
@@ -275,8 +313,21 @@ async def main():
             # 测试详情页 (如果列表页解析成功且有链接)
             if first_link:
                 print(f"\n正在抓取详情页: {first_link}")
-                detail_html = await fetch_html(first_link, headers)
-                test_detail_page(detail_html, config_data.get("detail_selectors", []), source["base_url"])
+                
+                # Handle headers
+                req_headers = headers.copy()
+                target_host = urlparse(first_link).netloc
+                cfg_host = req_headers.get("host") or req_headers.get("Host")
+                if cfg_host and cfg_host != target_host:
+                    req_headers.pop("host", None)
+                    req_headers.pop("Host", None)
+
+                detail_html = await fetch_html(first_link, req_headers)
+                
+                if "mp.weixin.qq.com" in first_link:
+                    test_wechat_page(detail_html)
+                else:
+                    test_detail_page(detail_html, config_data.get("detail_selectors", []), source["base_url"])
             else:
                 print("\n未获取到有效链接，跳过详情页测试")
 

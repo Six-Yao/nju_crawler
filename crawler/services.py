@@ -504,11 +504,55 @@ def compute_sha256(*segments: Optional[str]) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
+def parse_wechat_article(html: str) -> tuple[str, List[Attachments]]:
+    """Parse WeChat official account article."""
+    soup = BeautifulSoup(html, "lxml")
+    
+    if "当前环境异常" in html:
+        return "Error: WeChat environment exception (verification required)", []
+
+    content_div = soup.find("div", class_="rich_media_content")
+    content = content_div.get_text("\n", strip=True) if content_div else ""
+    
+    title = soup.find("h1", class_="rich_media_title")
+    title_text = title.get_text(strip=True) if title else ""
+    
+    author = soup.find("a", id="js_name")
+    author_text = author.get_text(strip=True) if author else ""
+    
+    create_time = ""
+    match = re.search(r"var createTime = '(.*?)';", html)
+    if match:
+        try:
+            ts = float(match.group(1))
+            create_time = datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
+        except Exception:
+            create_time = match.group(1)
+
+    # Biz (FakeID)
+    biz = ""
+    biz_match = re.search(r'var biz\s*=\s*"(.*?)";', html)
+    if biz_match:
+        biz = biz_match.group(1).replace('" || "', '').replace('"', '')
+
+    meta = []
+    if title_text: meta.append(f"Title: {title_text}")
+    if author_text: meta.append(f"Author: {author_text}")
+    if create_time: meta.append(f"Time: {create_time}")
+    if biz: meta.append(f"Biz: {biz}")
+    
+    full_text = "\n".join(meta) + "\n\n" + content
+    return full_text, []
+
+
 async def parse_detail_page(html: str, base_url: str, headers: dict) -> tuple[str, List[Attachments]]:
     """Parse a detail page and return aggregated text plus attachment metadata."""
+    if "mp.weixin.qq.com" in base_url:
+        return parse_wechat_article(html)
+
     soup = BeautifulSoup(html, "lxml")
     # 匹配当前 base_url 对应的 selector 配置
-    selector_cfg = next((cfg for cfg in DETAIL_SELECTORS if cfg["base_url"] == base_url), None)
+    selector_cfg = next((cfg for cfg in DETAIL_SELECTORS if cfg["base_url"] in base_url), None)
     if not selector_cfg:
         selector_cfg = DETAIL_SELECTORS[0]  # 默认用第一个
 
@@ -591,8 +635,18 @@ async def crawl_source(source_id: str) -> List[CrawlItem]:
             return None
         try:
             async with semaphore:
-                detail_html = await fetch_html(detail_url, source_cfg["headers"])
-            content, attachments = await parse_detail_page(detail_html, source_cfg["base_url"], source_cfg["headers"])
+                # 动态调整 Headers (如移除不匹配的 Host)
+                req_headers = source_cfg["headers"].copy()
+                target_host = urlparse(detail_url).netloc
+                cfg_host = req_headers.get("host") or req_headers.get("Host")
+                if cfg_host and cfg_host != target_host:
+                    req_headers.pop("host", None)
+                    req_headers.pop("Host", None)
+
+                detail_html = await fetch_html(detail_url, req_headers)
+            
+            # 使用 detail_url 作为 base_url 以正确解析相对路径
+            content, attachments = await parse_detail_page(detail_html, detail_url, req_headers)
             content = content or ""
         except RuntimeError as exc:
             print(f"[WARN] skip detail {detail_url}: {exc}")

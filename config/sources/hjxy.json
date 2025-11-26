@@ -1,0 +1,122 @@
+{
+    "sources": [
+        {
+            "id": "hjxy_xydt",
+            "name": "环境学院-学院动态",
+            "type": "api",
+            "base_url": "https://hjxy.nju.edu.cn",
+            "list_url": "https://hjxy.nju.edu.cn/sy/xydt/index.html",
+            "api_url": "https://hjxy.nju.edu.cn/njdx/openapi/t/info/list.do",
+            "max_pages": 5,
+            "headers": {
+                "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "host": "hjxy.nju.edu.cn",
+                "Origin": "https://hjxy.nju.edu.cn",
+                "Referer": "https://hjxy.nju.edu.cn/sy/xydt/index.html"
+            },
+            "payload": {
+                "siteid": "171",
+                "channelid": "12777",
+                "pagesize": "12"
+            },
+            "selectors": {
+                "item_container": "infolist",
+                "title": "title",
+                "date": "releasetime",
+                "url": "url"
+            }
+        },
+        {
+            "id": "hjxy_tzgg",
+            "name": "环境学院-通知公告",
+            "type": "api",
+            "base_url": "https://hjxy.nju.edu.cn",
+            "list_url": "https://hjxy.nju.edu.cn/sy/tzgg/index.html",
+            "api_url": "https://hjxy.nju.edu.cn/njdx/openapi/t/info/list.do",
+            "max_pages": 5,
+            "headers": {
+                "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "host": "hjxy.nju.edu.cn",
+                "Origin": "https://hjxy.nju.edu.cn",
+                "Referer": "https://hjxy.nju.edu.cn/sy/tzgg/index.html"
+            },
+            "payload": {
+                "siteid": "171",
+                "channelid": "12778",
+                "pagesize": "12"
+            },
+            "selectors": {
+                "item_container": "infolist",
+                "title": "title",
+                "date": "releasetime",
+                "url": "url"
+            }
+        },
+        {
+            "id": "hjxy_kjjz",
+            "name": "环境学院-科技进展",
+            "type": "api",
+            "base_url": "https://hjxy.nju.edu.cn",
+            "list_url": "https://hjxy.nju.edu.cn/sy/kjjz/index.html",
+            "api_url": "https://hjxy.nju.edu.cn/njdx/openapi/t/info/list.do",
+            "max_pages": 5,
+            "headers": {
+                "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "host": "hjxy.nju.edu.cn",
+                "Origin": "https://hjxy.nju.edu.cn",
+                "Referer": "https://hjxy.nju.edu.cn/sy/kjjz/index.html"
+            },
+            "payload": {
+                "siteid": "171",
+                "channelid": "12779",
+                "pagesize": "12"
+            },
+            "selectors": {
+                "item_container": "infolist",
+                "title": "title",
+                "date": "releasetime",
+                "url": "url"
+            }
+        },
+        {
+            "id": "hjxy_hdfc",
+            "name": "环境学院-活动风采",
+            "type": "api",
+            "base_url": "https://hjxy.nju.edu.cn",
+            "list_url": "https://hjxy.nju.edu.cn/sy/hdfc/index.html",
+            "api_url": "https://hjxy.nju.edu.cn/njdx/openapi/t/info/list.do",
+            "max_pages": 5,
+            "headers": {
+                "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "host": "hjxy.nju.edu.cn",
+                "Origin": "https://hjxy.nju.edu.cn",
+                "Referer": "https://hjxy.nju.edu.cn/sy/hdfc/index.html"
+            },
+            "payload": {
+                "siteid": "171",
+                "channelid": "12780",
+                "pagesize": "12"
+            },
+            "selectors": {
+                "item_container": "infolist",
+                "title": "title",
+                "date": "releasetime",
+                "url": "url"
+            }
+        }
+    ],
+    "detail_selectors": [
+        {
+            "base_url": "https://hjxy.nju.edu.cn",
+            "meta_selector": {
+                "item_container": ".w-content",
+                "title": ".w-content-top h3",
+                "publish_time": ".w-content-top .span1"
+            },
+            "text_selector": {
+                "item_container": ".wz-auto-center",
+                "content": ".bs-word p, .bs-word span, .bs-word div"
+            }
+        }
+    ]
+}

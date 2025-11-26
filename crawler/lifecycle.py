@@ -41,7 +41,7 @@ async def _periodic_crawl_loop() -> None:
     后台循环任务，根据配置的间隔不断执行爬取。
     """
     while True:
-        # await _crawl_all_sources_once()  # 执行一次全源爬取
+        await _crawl_all_sources_once()  # 执行一次全源爬取
         await asyncio.sleep(max(1, CRAWL_INTERVAL))  # 间隔等待后继续下一轮
 
 

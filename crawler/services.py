@@ -239,12 +239,33 @@ def parse_publish_time(date_str: Optional[str]) -> datetime:
     # 确保转换为字符串，处理 API 返回整数的情况
     date_str = str(date_str).strip()
 
+    # 处理纯数字时间戳 (如 1618379815000)
+    if date_str.isdigit():
+        try:
+            # 13位为毫秒级时间戳
+            if len(date_str) == 13:
+                ts = float(date_str) / 1000.0
+                return datetime.fromtimestamp(ts, tz=timezone.utc)
+            # 10位为秒级时间戳 (排除 20250101 这种8位日期)
+            elif len(date_str) == 10:
+                ts = float(date_str)
+                return datetime.fromtimestamp(ts, tz=timezone.utc)
+        except (ValueError, OSError, OverflowError):
+            pass
+
     # 特殊格式处理：DayYear-Month (e.g., "252025-11" -> "2025-11-25")
     # 这种格式出现在信息管理学院等网站
     special_match = re.match(r"^(\d{1,2})(\d{4}-\d{2})$", date_str)
     if special_match:
         day, year_month = special_match.groups()
         date_str = f"{year_month}-{day.zfill(2)}"
+
+    # 特殊格式处理：Day/Year/Month (e.g., "07/2023/04" -> "2023-04-07")
+    dym_match = re.match(r"^(\d{1,2})/(\d{4})/(\d{1,2})$", date_str)
+    if dym_match:
+        p1, year, p2 = dym_match.groups()
+        # 假设格式为 Day/Year/Month
+        date_str = f"{year}-{p2.zfill(2)}-{p1.zfill(2)}"
 
     # 新增：仅有月日的情况（如 "11-25" 或 "11/25" 或 "11.25"）
     md_match = re.match(r"^(\d{1,2})[-/.](\d{1,2})$", date_str)
@@ -270,6 +291,8 @@ def parse_publish_time(date_str: Optional[str]) -> datetime:
             return dt.replace(tzinfo=timezone.utc)
         except ValueError:
             continue
+
+    print(f"[WARN] Failed to parse date string: {date_str}")
     return datetime.now(timezone.utc)
 
 

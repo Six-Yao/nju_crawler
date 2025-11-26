@@ -1,0 +1,67 @@
+{
+  "sources": [
+    {
+      "id": "mkszyxy_tzgg",
+      "name": "马克思主义学院-通知公告",
+      "base_url": "https://marxism.nju.edu.cn/index",
+      "list_url": "https://marxism.nju.edu.cn/index/tzgg.htm",
+      "max_pages": 5,
+      "headers": {
+        "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
+        "host": "marxism.nju.edu.cn"
+      },
+      "selectors": {
+        "item_container": ".newlist1",
+        "date": ".flex",
+        "title": ".l1",
+        "url": "a"
+      },
+      "detail_selector": ".article .cont p"
+    },
+    {
+      "id": "mkszyxy_xwdt",
+      "name": "马克思主义学院-新闻动态",
+      "base_url": "https://marxism.nju.edu.cn/index",
+      "list_url": "https://marxism.nju.edu.cn/index/xwdt.htm",
+      "max_pages": 5,
+      "headers": {
+        "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
+        "host": "marxism.nju.edu.cn"
+      },
+      "selectors": {
+        "item_container": ".newlist",
+        "date": ".flex",
+        "title": ".l1",
+        "url": "a"
+      },
+      "detail_selector": ".article .cont p"
+    }
+  ],
+  "detail_selectors": [
+    {
+      "base_url": "https://marxism.nju.edu.cn/index",
+      "meta_selector": {
+        "item_container": ".cont",
+        "views": "#dynclicks_wbnews"
+      },
+      "text_selector": {
+        "item_container": ".cont",
+        "content": "span"
+      },
+      "img_selector": {
+        "item_container": ".cont",
+        "images": "p img[src]"
+      },
+      "doc_selector": {
+        "item_container": ".cont",
+        "files": ".cont ul li a[href]",
+        "name": ".cont ul li a[href]"
+      },
+      "embedded_pdf_selector": {
+        "item_container": ".cont",
+        "viewer": "#vsb_content .v_news_content script",
+        "download_link": "#vsb_content .v_news_content script"
+      }
+    }
+  ]
+}

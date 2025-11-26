@@ -445,6 +445,43 @@ async def extract_embedded_pdf_attachment(
     ]
 
 
+async def extract_script_embedded_pdf_attachments(
+    soup: BeautifulSoup, selector_cfg: Optional[dict], base_url: str, headers: dict
+) -> List[Attachments]:
+    """Handle sites that embed PDFs via script"""
+    if not selector_cfg:
+        return []
+    script_selector = selector_cfg.get("download_link")
+    if not script_selector:
+        return []
+    scripts = soup.select(script_selector)
+    if not scripts:
+        return []
+    urls: List[str] = []
+    for s in scripts:
+        content = s.string or s.get_text() or ""
+        m = re.search(r"showVsbpdfIframe\([\"']([^\"']+?\.pdf)[\"']", content)
+        if m:
+            url = normalize_url(base_url, m.group(1))
+            if url:
+                urls.append(url)
+    if not urls:
+        return []
+    attachments: List[Attachments] = []
+    for url in urls:
+        binary = await download_binary(url, headers)
+        if not binary:
+            attachments.append(
+                Attachments(url=url, filename=url.split("/")[-1], mime_type="application/pdf", text="")
+            )
+            continue
+        text = await asyncio.to_thread(parse_pdf_bytes, binary)
+        attachments.append(
+            Attachments(url=url, filename=url.split("/")[-1], mime_type="application/pdf", text=text)
+        )
+    return attachments
+
+
 def aggregate_content(text: str, image_texts: List[str], attachment_texts: List[str]) -> str:
     """Merge base content, OCR outputs, and attachment snippets into one blob."""
     chunks = [chunk for chunk in [text] if chunk]
@@ -486,8 +523,11 @@ async def parse_detail_page(html: str, base_url: str, headers: dict) -> tuple[st
     embedded_pdf = await extract_embedded_pdf_attachment(
         soup, selector_cfg.get("embedded_pdf_selector"), base_url, headers
     )
+    embedded_pdf_script = await extract_script_embedded_pdf_attachments(
+        soup, selector_cfg.get("embedded_pdf_selector"), base_url, headers
+    )
 
-    attachments = pdf_attachments + doc_attachments + embedded_pdf
+    attachments = pdf_attachments + doc_attachments + embedded_pdf + embedded_pdf_script
     attachment_texts = [build_attachment_text_snippet(att) for att in attachments if att.text]
     content = aggregate_content(text_content, image_texts, attachment_texts)
     return content, attachments

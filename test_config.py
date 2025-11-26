@@ -5,7 +5,7 @@ import sys
 import base64
 from curl_cffi import requests as curl_requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse, parse_qs
 
 # 默认测试配置
 DEFAULT_CONFIG_FILE = "config/sources/gjgxxy.json"
@@ -133,7 +133,50 @@ def test_detail_page(html: str, detail_selectors: list, base_url: str):
             print(f"找到 {len(images)} 张图片")
             for i, img in enumerate(images[:5]):
                 src = img.get('src')
-                print(f"图片 {i+1}: {src}")
+                print(f"图片 {i+1}: {urljoin(base_url,src)}")
+
+    # 提取 PDF 链接
+    if "embedded_pdf_selector" in selector_cfg:
+        files_sel = selector_cfg["embedded_pdf_selector"].get("download_link")
+        if files_sel:
+            files = soup.select(files_sel)
+            print(f"找到 {len(files)} 份PDF")
+            for i, el in enumerate(files[:5]):
+                pdf_url = None
+                # iframe: 从src的file参数解析
+                if el.name == "iframe":
+                    src = el.get("src")
+                    if src:
+                        parsed = urlparse(src)
+                        q = parse_qs(parsed.query)
+                        file_param = q.get("file")
+                        if file_param:
+                            pdf_url = urljoin(base_url, file_param[0])
+                        else:
+                            pdf_url = urljoin(base_url, src)
+                # script: 从文本匹配 showVsbpdfIframe("/path.pdf", ...)
+                elif el.name == "script":
+                    content = el.string or el.get_text() or ""
+                    import re
+                    m = re.search(r"showVsbpdfIframe\([\"']([^\"']+?\.pdf)[\"']", content)
+                    if m:
+                        pdf_url = urljoin(base_url, m.group(1))
+                elif el.name == "a":
+                    href = el.get("href") or el.get("src")
+                    if href and href.endswith(".pdf"):
+                        pdf_url = urljoin(base_url, href)
+                print(f"PDF {i+1}: {pdf_url}")
+
+    # 提取 DOC/DOCX 链接
+    if "doc_selector" in selector_cfg:
+        files_sel = selector_cfg["doc_selector"].get("files")
+        if files_sel:
+            files = soup.select(files_sel)
+            print(f"找到 {len(files)} 份DOC/DOCX")
+            for i, a in enumerate(files[:5]):
+                href = a.get("href") or a.get("src")
+                name = a.get_text(strip=True)
+                print(f"DOC/DOCX {i+1}: {urljoin(base_url,href)}")
 
 def test_api_list_page(json_data: dict, selectors: dict, base_url: str):
     print("\n--- 测试 API 列表页解析 ---")

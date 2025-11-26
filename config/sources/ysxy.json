@@ -1,0 +1,68 @@
+{
+  "sources": [
+    {
+      "id": "ysxy_tzgg",
+      "name": "艺术学院-通知公告",
+      "base_url": "https://art.nju.edu.cn",
+      "list_url": "https://art.nju.edu.cn/tzgg/list1.htm",
+      "max_pages": 5,
+      "headers": {
+        "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
+        "host": "art.nju.edu.cn"
+      },
+      "selectors": {
+        "item_container": ".col_news_con li.news",
+        "date": ".news_date",
+        "title": ".news_title a",
+        "url": ".news_title a"
+      },
+      "detail_selector": "#d-container .wp_articlecontent p"
+    },
+    {
+      "id": "ysxy_xydt",
+      "name": "艺术学院-学院动态",
+      "base_url": "https://art.nju.edu.cn",
+      "list_url": "https://art.nju.edu.cn/55326/list1.htm",
+      "max_pages": 5,
+      "headers": {
+        "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
+        "host": "art.nju.edu.cn"
+      },
+      "selectors": {
+        "item_container": ".col_news_con li.news",
+        "date": ".news_date",
+        "title": ".news_title a",
+        "url": ".news_title a"
+      },
+      "detail_selector": "#d-container .wp_articlecontent p"
+    }
+  ],
+  "detail_selectors": [
+    {
+      "base_url": "https://art.nju.edu.cn",
+      "text_selector": {
+        "item_container": "#d-container",
+        "content": ".wp_articlecontent"
+      },
+      "img_selector": {
+        "item_container": "#d-container",
+        "images": ".wp_articlecontent img[src]"
+      },
+      "pdf_selector": {
+        "item_container": "#d-container",
+        "files": ".wp_articlecontent a[href$=\".pdf\"]",
+        "name": ".wp_articlecontent a[href$=\".pdf\"]"
+      },
+      "doc_selector": {
+        "item_container": "#d-container",
+        "files": ".wp_articlecontent a[href$=\".doc\"], .wp_articlecontent a[href$=\".docx\"]",
+        "name": ".wp_articlecontent a[href$=\".doc\"], .wp_articlecontent a[href$=\".docx\"]"
+      },
+      "embedded_pdf_selector": {
+        "item_container": "#d-container",
+        "viewer": ".wp_articlecontent iframe.wp_pdf_player",
+        "download_link": ".wp_articlecontent a[href$=\".pdf\"]"
+      }
+    }
+  ]
+}

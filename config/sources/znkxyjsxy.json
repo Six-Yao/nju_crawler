@@ -1,0 +1,50 @@
+{
+  "sources": [
+    {
+      "id": "znkxyjsxy_xwdt",
+      "name": "智能科学与技术学院-通知公告",
+      "base_url": "https://is.nju.edu.cn",
+      "list_url": "https://is.nju.edu.cn/57162/list1.htm",
+      "max_pages": 5,
+      "headers": {
+        "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
+        "host": "is.nju.edu.cn"
+      },
+      "selectors": {
+        "item_container": ".col_news_con li.news",
+        "date": ".news_meta",
+        "title": ".news_title a",
+        "url": ".news_title a"
+      },
+      "detail_selector": "#d-container .wp_articlecontent p"
+    }
+  ],
+  "detail_selectors": [
+    {
+      "base_url": "https://is.nju.edu.cn",
+      "text_selector": {
+        "item_container": "#d-container",
+        "content": ".wp_articlecontent"
+      },
+      "img_selector": {
+        "item_container": "#d-container",
+        "images": ".wp_articlecontent img[src]"
+      },
+      "pdf_selector": {
+        "item_container": "#d-container",
+        "files": ".wp_articlecontent a[href$=\".pdf\"]",
+        "name": ".wp_articlecontent a[href$=\".pdf\"] span"
+      },
+      "doc_selector": {
+        "item_container": "#d-container",
+        "files": ".wp_articlecontent a[href$=\".doc\"], .wp_articlecontent a[href$=\".docx\"]",
+        "name": ".wp_articlecontent a[href$=\".doc\"], .wp_articlecontent a[href$=\".docx\"]"
+      },
+      "embedded_pdf_selector": {
+        "item_container": "#d-container",
+        "viewer": ".wp_articlecontent iframe.wp_pdf_player",
+        "download_link": ".wp_articlecontent img[src$=\"icon_pdf.gif\"] + a"
+      }
+    }
+  ]
+}

@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>南京大学教育资讯</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Vue 3 -->
+    <script src="https://unpkg.com/vue@3.4.27/dist/vue.global.prod.js"></script>
+    <!-- 引入 Axios (用于 API 请求) -->
+    <script src="https://unpkg.com/axios@1.7.2/dist/axios.min.js"></script>
+    <!-- 引入 FileSaver.js (用于导出 Word) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <style>
+        /* 定义南大紫 */
+        :root {
+            --nju-purple: #531c69;
+        }
+        .nju-purple {
+            color: var(--nju-purple);
+        }
+        .bg-nju-purple {
+            background-color: var(--nju-purple);
+        }
+        /* 简单的加载动画 */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--nju-purple);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* 预览窗口内容样式 */
+        .preview-content {
+            overflow-y: auto;
+        }
+        .preview-content h1, .preview-content h2, .preview-content h3 {
+            color: var(--nju-purple);
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .preview-content p {
+            line-height: 1.75;
+            margin-bottom: 1rem;
+        }
+        .preview-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        .preview-content a {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+        /* 隐藏滚动条但保留滚动功能 */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+
+    <div id="app" class="min-h-screen">
+        
+        <!-- 头部 -->
+        <header class="bg-white shadow-sm sticky top-0 z-20">
+            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+                <h1 class="text-2xl md:text-3xl font-bold nju-purple">
+                    南京大学教育资讯
+                </h1>
+                <button
+                    @click="exportToWord"
+                    class="bg-nju-purple text-white px-4 py-2 rounded-lg shadow hover:bg-opacity-90 transition-all duration-200 text-sm md:text-base">
+                    导出为 Word
+                </button>
+            </div>
+        </header>
+
+        <!-- 搜索栏 -->
+        <div class="container mx-auto p-4 bg-white md:rounded-b-lg shadow-md mb-6 sticky top-[80px] z-10">
+            <div class="flex flex-col md:flex-row md:items-center gap-4">
+                <!-- 日期选择 -->
+                <div class="flex-1 flex gap-2">
+                    <div class="w-1/2">
+                        <label for="start_time" class="block text-sm font-medium text-gray-700">开始日期</label>
+                        <input type="date" id="start_time" v-model="dateRange.start" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                    </div>
+                    <div class="w-1/2">
+                        <label for="end_time" class="block text-sm font-medium text-gray-700">结束日期</label>
+                        <input type="date" id="end_time" v-model="dateRange.end" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                    </div>
+                </div>
+
+                <!-- 信息源选择 (按钮) -->
+                <div class="flex-shrink-0">
+                    <label class="block text-sm font-medium text-gray-700 invisible hidden md:block">筛选</label>
+                    <button
+                        @click="showSourceModal = true"
+                        class="mt-1 w-full md:w-auto px-4 py-2 border border-gray-300 rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                        筛选信息源 ({{ selectedSourceIds.length }} / {{ sourceList.length }})
+                    </button>
+                </div>
+
+                <!-- 查询按钮 -->
+                <div class="flex-shrink-0">
+                    <label class="block text-sm font-medium text-gray-700 invisible hidden md:block">操作</label>
+                    <button
+                        @click="fetchData"
+                        :disabled="isLoading"
+                        class="mt-1 w-full md:w-auto px-6 py-2 bg-nju-purple text-white rounded-lg shadow hover:bg-opacity-90 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-700 disabled:opacity-50">
+                        <span v-if="!isLoading">查询</span>
+                        <span v-else>查询中...</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主内容区 -->
+        <main class="container mx-auto p-4 flex flex-col md:flex-row gap-6">
+            
+            <!-- 左侧内容列表 (手机端全宽) -->
+            <div class="w-full md:w-2/5 lg:w-1/3 h-full">
+                <!-- 加载状态 -->
+                <div v-if="isLoading" class="flex justify-center items-center h-64">
+                    <div class="loader"></div>
+                </div>
+
+                <!-- 错误状态 -->
+                <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
+                    <strong class="font-bold">查询失败：</strong>
+                    <span class="block sm:inline">{{ error }}</span>
+                </div>
+
+                <!-- 无数据状态 -->
+                <div v-if="!isLoading && !error && groupedResults.length === 0" class="text-center text-gray-500 py-10">
+                    <p>暂无数据，请尝试调整筛选条件后查询。</p>
+                </div>
+
+                <!-- 结果列表 -->
+                <div v-if="!isLoading && !error && groupedResults.length > 0" class="space-y-3">
+                    <div v-for="source in groupedResults" :key="source.id" class="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300">
+                        <!-- 信息源卡片 (可点击展开) -->
+                        <div
+                            @click="toggleSource(source.id)"
+                            class="p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50">
+                            <h2 class="text-lg font-semibold nju-purple">{{ source.name }}</h2>
+                            <div class="flex items-center space-x-2">
+                                <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full">{{ source.items.length }} 条</span>
+                                <svg class="w-6 h-6 text-gray-500 transition-transform duration-300"
+                                     :class="{'rotate-180': activeSourceId === source.id}"
+                                     fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- 展开的子卡片列表 -->
+                        <transition
+                            enter-active-class="transition ease-out duration-300"
+                            enter-from-class="transform opacity-0 scale-y-95 -translate-y-2"
+                            enter-to-class="transform opacity-100 scale-y-100 translate-y-0"
+                            leave-active-class="transition ease-in duration-200"
+                            leave-from-class="transform opacity-100 scale-y-100 translate-y-0"
+                            leave-to-class="transform opacity-0 scale-y-95 -translate-y-2">
+                            <div v-if="activeSourceId === source.id" class="border-t border-gray-200">
+                                <div v-if="source.items.length > 0" class="divide-y divide-gray-100">
+                                    <div v-for="item in source.items" :key="item.id"
+                                        @click="selectItem(item)"
+                                        class="p-3 cursor-pointer hover:bg-purple-50 flex justify-between items-center"
+                                        :class="{'bg-purple-100': selectedItem && selectedItem.id === item.id}">
+                                        
+                                        <div class="flex-1 pr-3">
+                                            <p class="text-sm font-medium text-gray-900">{{ item.title }}</p>
+                                            <p class="text-xs text-gray-500 mt-1">{{ formatTime(item.publish_time) }}</p>
+                                        </div>
+                                        <a :href="item.url"
+                                            target="_blank"
+                                            @click.stop
+                                            class="flex-shrink-0 text-sm bg-nju-purple text-white px-3 py-1 rounded-full shadow-sm hover:bg-opacity-80 transition-all">
+                                            跳转
+                                        </a>
+                                    </div>
+                                </div>
+                                <div v-else class="p-3 text-sm text-gray-500 text-center">
+                                    此分类下无内容
+                                </div>
+                            </div>
+                        </transition>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧预览窗口 (手机端隐藏) -->
+            <div class="w-full md:w-3/5 lg:w-2/3 hidden md:block">
+                <div class="bg-white rounded-lg shadow-lg h-[calc(100vh-200px)] sticky top-[164px] flex flex-col">
+                    <div class="p-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-800">内容预览</h3>
+                    </div>
+                    
+                    <div v-if="selectedItem" class="flex-1 p-5 overflow-y-auto scrollbar-hide preview-content" v-html="selectedItem.content">
+                        <!-- 内容通过 v-html 渲染 -->
+                    </div>
+
+                    <div v-else class="flex-1 flex justify-center items-center text-gray-400">
+                        <p>请点击左侧文章标题进行预览</p>
+                    </div>
+
+                    <div v-if="selectedItem" class="p-4 border-t border-gray-200 bg-gray-50 rounded-b-lg">
+                        <a :href="selectedItem.url" target="_blank" class="text-sm font-medium text-purple-700 hover:text-purple-900">
+                            查看原文链接：{{ selectedItem.url }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- 信息源选择模态框 -->
+        <transition
+            enter-active-class="ease-out duration-300"
+            enter-from-class="opacity-0"
+            enter-to-class="opacity-100"
+            leave-active-class="ease-in duration-200"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0">
+            <div v-if="showSourceModal" class="fixed inset-0 z-30 overflow-y-auto bg-gray-600 bg-opacity-75 transition-opacity" @click.self="showSourceModal = false">
+                <div class="flex items-center justify-center min-h-screen p-4">
+                    <transition
+                        enter-active-class="ease-out duration-300"
+                        enter-from-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                        enter-to-class="opacity-100 translate-y-0 sm:scale-100"
+                        leave-active-class="ease-in duration-200"
+                        leave-from-class="opacity-100 translate-y-0 sm:scale-100"
+                        leave-to-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                        <div class="bg-white rounded-lg shadow-xl transform transition-all sm:my-8 sm:w-full sm:max-w-2xl" @click.stop>
+                            <div class="p-5 border-b border-gray-200">
+                                <h3 class="text-lg font-medium leading-6 text-gray-900">
+                                    筛选信息源
+                                </h3>
+                            </div>
+                            <div class="p-5">
+                                <div class="flex justify-between items-center mb-4">
+                                    <button @click="selectAllSources" class="text-sm text-purple-600 hover:text-purple-800">全选</button>
+                                    <button @click="deselectAllSources" class="text-sm text-purple-600 hover:text-purple-800">全不选</button>
+                                </div>
+                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 max-h-60 overflow-y-auto">
+                                    <div v-for="source in sourceList" :key="source.id" class="flex items-center">
+                                        <input :id="'cb-' + source.id" type="checkbox" :value="source.id" v-model="selectedSourceIds" class="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                                        <label :for="'cb-' + source.id" class="ml-2 block text-sm text-gray-900">{{ source.name }}</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
+                                <button type="button" @click="showSourceModal = false" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-nju-purple text-base font-medium text-white hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:ml-3 sm:w-auto sm:text-sm">
+                                    确认
+                                </button>
+                            </div>
+                        </div>
+                    </transition>
+                </div>
+            </div>
+        </transition>
+
+    </div>
+
+    <script type="module">
+        const { createApp, ref, computed, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                // --- 状态 (State) ---
+
+                // 后端 API 地址
+                // !! 重要提示: 浏览器出于安全原因, 无法访问 0.0.0.0。
+                // !! 请确保您的后端服务监听 0.0.0.0:8000
+                // !! 但在前端请使用 localhost 或 127.0.0.1 访问。
+                const API_BASE_URL = 'http://localhost:8000'; 
+                
+                // 预定义的信息源列表 (!!! 顺序和 ID 必须与后端匹配 !!!)
+                // 这里的 ID (如 'xsxy') 是一个示例, 您需要替换为后端实际使用的 source_id
+                const sourceList = ref([
+                    { id: 'bksy', name: '本科生院' },
+                    { id: 'xsxy', name: '新生学院' },
+                    { id: 'wxy', name: '文学院' },
+                    { id: 'lsxy', name: '历史学院' },
+                    { id: 'zxxx', name: '哲学系' }, // 示例, 改为 "哲学系" 或 "哲学学院"
+                    { id: 'xwcbxy', name: '新闻传播学院' },
+                    { id: 'sxy', name: '商学院' },
+                    { id: 'wgyxy', name: '外国语学院' },
+                    { id: 'zfglxy', name: '政府管理学院' },
+                    { id: 'gjgxxy', name: '国际关系学院' },
+                    { id: 'xxglxy', name: '信息管理学院' },
+                    // ... 在此添加更多信息源
+                ]);
+
+                // 搜索条件
+                const dateRange = ref({
+                    start: new Date(new Date().setDate(new Date().getDate() - 7)).toISOString().split('T')[0], // 默认7天前
+                    end: new Date().toISOString().split('T')[0], // 默认今天
+                });
+                const selectedSourceIds = ref(sourceList.value.map(s => s.id)); // 默认全选
+                const showSourceModal = ref(false);
+
+                // 异步数据
+                const isLoading = ref(false);
+                const error = ref(null);
+                const results = ref([]); // 原始 API 返回数据
+
+                // UI 状态
+                const activeSourceId = ref(null); // 当前展开的分类
+                const selectedItem = ref(null); // 当前预览的文章
+
+                // --- 计算属性 (Computed) ---
+
+                // 将原始数据按预定义列表分组和排序
+                const groupedResults = computed(() => {
+                    // 1. 创建一个 Map 用于快速查找原始结果
+                    const resultsBySource = new Map();
+                    results.value.forEach(item => {
+                        // 按 source_id 分类
+                        if (!resultsBySource.has(item.source_id)) {
+                            resultsBySource.set(item.source_id, []);
+                        }
+                        resultsBySource.get(item.source_id).push(item);
+                    });
+
+                    // 2. 遍历预定义的 sourceList 以保证顺序
+                    return sourceList.value.map(source => {
+                        // 前缀匹配分组
+                        const items = [];
+                        for (const [sid, arr] of resultsBySource.entries()) {
+                            if (sid.startsWith(source.id)) {
+                                items.push(...arr);
+                            }
+                        }
+                        // 3. 对每个分类内部的文章按发布时间倒序排序
+                        items.sort((a, b) => {
+                            return new Date(b.publish_time) - new Date(a.publish_time);
+                        });
+                        return {
+                            ...source,
+                            items: items,
+                        };
+                    });
+                });
+
+
+                // --- 方法 (Methods) ---
+
+                // 格式化日期
+                const formatTime = (timeStr) => {
+                    if (!timeStr) return '未知时间';
+                    try {
+                        // 尝试解析为日期对象
+                        const date = new Date(timeStr);
+                        // 检查是否为有效日期
+                        if (isNaN(date.getTime())) {
+                            return timeStr; // 如果解析失败, 返回原始字符串
+                        }
+                        // 格式化为 "YYYY-MM-DD HH:mm"
+                        return date.toLocaleString('zh-CN', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                        }).replace(/\//g, '-');
+                    } catch (e) {
+                        return timeStr; // 出错时返回原始字符串
+                    }
+                };
+                
+                // 格式化导出 Word 用的日期 (e.g., 6月9日)
+                const formatExportDate = (dateStr) => {
+                    if (!dateStr) return '';
+                    const date = new Date(dateStr);
+                    return `${date.getMonth() + 1}月${date.getDate()}日`;
+                };
+
+                // 切换分类展开
+                const toggleSource = (id) => {
+                    activeSourceId.value = (activeSourceId.value === id) ? null : id;
+                };
+
+                // 选择预览文章
+                const selectItem = (item) => {
+                    selectedItem.value = item;
+                };
+
+                // 全选/全不选
+                const selectAllSources = () => {
+                    selectedSourceIds.value = sourceList.value.map(s => s.id);
+                };
+                const deselectAllSources = () => {
+                    selectedSourceIds.value = [];
+                };
+
+                // 从后端获取数据
+                const fetchData = async () => {
+                    isLoading.value = true;
+                    error.value = null;
+                    selectedItem.value = null; // 清除预览
+                    
+                    // 确保结束日期包含当天
+                    let endTime = dateRange.value.end;
+                    if (endTime) {
+                         // 假设日期格式为 YYYY-MM-DD, 调整为当天的 23:59:59
+                        endTime = `${endTime}T23:59:59`;
+                    }
+
+                    // 构造查询参数字符串
+                    const params = new URLSearchParams({
+                        source_id: selectedSourceIds.value.join(','), // 如果是数组，后端需支持
+                        start_time: dateRange.value.start,
+                        end_time: endTime,
+                    }).toString();
+
+                    try {
+                        const response = await axios.get(`${API_BASE_URL}/api/records?${params}`);
+                        
+                        if (response.data && Array.isArray(response.data)) {
+                             results.value = response.data;
+                             // 默认展开第一个有内容的分类
+                             const firstSourceWithItems = groupedResults.value.find(g => g.items.length > 0);
+                             if (firstSourceWithItems) {
+                                 activeSourceId.value = firstSourceWithItems.id;
+                             } else {
+                                 activeSourceId.value = null;
+                             }
+                        } else {
+                            results.value = [];
+                            error.value = "返回数据格式不正确。";
+                        }
+                       
+                    } catch (err) {
+                        console.error("API 请求失败:", err);
+                        if (err.response) {
+                            error.value = `服务器错误: ${err.response.status} ${err.response.statusText}`;
+                        } else if (err.request) {
+                            error.value = "无法连接到服务器。请检查后端服务是否正在运行, 以及 API 地址是否正确。";
+                        } else {
+                            error.value = `请求失败: ${err.message}`;
+                        }
+                        results.value = [];
+                    } finally {
+                        isLoading.value = false;
+                    }
+                };
+
+                // 导出为 Word
+                const exportToWord = () => {
+                    let htmlContent = `
+                        <!DOCTYPE html>
+                        <html lang="zh-CN">
+                        <head>
+                            <meta charset="UTF-8">
+                            <title>南京大学教育资讯</title>
+                            <style>
+                                body { font-family: 'SimSun', '宋体', serif; font-size: 14pt; }
+                                h1 { text-align: center; font-family: 'SimHei', '黑体', sans-serif; }
+                                h2 { font-family: 'SimHei', '黑体', sans-serif; font-size: 16pt; margin-top: 20px; margin-bottom: 10px; }
+                                ul { list-style-type: none; padding-left: 20px; }
+                                li { margin-bottom: 8px; }
+                                p { margin-left: 20px; color: #555; }
+                                a { color: #0000FF; text-decoration: none; }
+                            </style>
+                        </head>
+                        <body>
+                            <h1>南京大学教育资讯 (${dateRange.value.start} 至 ${dateRange.value.end})</h1>
+                    `;
+
+                    const dateRangeStr = `${formatExportDate(dateRange.value.start)}-${formatExportDate(dateRange.value.end)}`;
+
+                    // 必须使用 groupedResults, 因为它保证了顺序
+                    groupedResults.value.forEach((source, index) => {
+                        htmlContent += `<h2>${index + 1}. ${source.name}：</h2>`;
+                        
+                        if (source.items.length === 0) {
+                            htmlContent += `<p> ${dateRangeStr}无相关推送</p>`;
+                        } else {
+                            htmlContent += `<ul>`;
+                            source.items.forEach(item => {
+                                // 避免 URL 换行
+                                htmlContent += `<li> ${item.title} <a href="${item.url}">${item.url}</a></li>`;
+                            });
+                            htmlContent += `</ul>`;
+                        }
+                    });
+
+                    htmlContent += `</body></html>`;
+                    
+                    const blob = new Blob([htmlContent], { type: "application/msword;charset=utf-8" });
+                    saveAs(blob, `南京大学教育资讯_${dateRange.value.start}_${dateRange.value.end}.doc`);
+                };
+
+
+                // --- 生命周期 (Lifecycle) ---
+                onMounted(() => {
+                    fetchData(); // 页面加载时自动查询一次
+                });
+
+                // --- 返回 (Return) ---
+                return {
+                    sourceList,
+                    dateRange,
+                    selectedSourceIds,
+                    showSourceModal,
+                    isLoading,
+                    error,
+                    results,
+                    activeSourceId,
+                    selectedItem,
+                    groupedResults,
+                    fetchData,
+                    toggleSource,
+                    selectItem,
+                    formatTime,
+                    selectAllSources,
+                    deselectAllSources,
+                    exportToWord,
+                };
+            }
+        }).mount('#app');
+    </script>
+
+</body>
+</html>

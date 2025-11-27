@@ -1,36 +1,54 @@
 {
   "sources": [
     {
-      "id": "yxy_xyxw",
-      "name": "医学院-学院新闻",
-      "base_url": "https://med.nju.edu.cn",
-      "list_url": "https://med.nju.edu.cn/10653/list.htm",
+      "id": "dqkxxy_xyxw",
+      "name": "大气科学学院-学院新闻",
+      "base_url": "https://as.nju.edu.cn",
+      "list_url": "https://as.nju.edu.cn/xyxw/list.htm",
       "pagination_mode": "forward",
-      "max_pages": 3,
+      "max_pages": 1,
       "headers": {
         "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
-        "host": "med.nju.edu.cn"
+        "host": "as.nju.edu.cn"
       },
       "selectors": {
-        "item_container": "#wp_news_w26 li.list_item",
+        "item_container": ".wp_article_list li.list_item",
         "date": ".Article_PublishDate",
         "title": ".Article_Title a",
         "url": ".Article_Title a"
       }
     },
     {
-      "id": "yxy_xygg",
-      "name": "医学院-学院公告",
-      "base_url": "https://med.nju.edu.cn",
-      "list_url": "https://med.nju.edu.cn/10654/list.htm",
+      "id": "dqkxxy_tzgg",
+      "name": "大气科学学院-通知公告",
+      "base_url": "https://as.nju.edu.cn",
+      "list_url": "https://as.nju.edu.cn/tzgg/list.htm",
       "pagination_mode": "forward",
-      "max_pages": 3,
+      "max_pages": 1,
       "headers": {
         "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
-        "host": "med.nju.edu.cn"
+        "host": "as.nju.edu.cn"
       },
       "selectors": {
-        "item_container": "#wp_news_w26 li.list_item",
+        "item_container": ".wp_article_list li.list_item",
+        "date": ".Article_PublishDate",
+        "title": ".Article_Title a",
+        "url": ".Article_Title a"
+      }
+    },
+    {
+      "id": "dqkxxy_bgjz",
+      "name": "大气科学学院-学术活动",
+      "base_url": "https://as.nju.edu.cn",
+      "list_url": "https://as.nju.edu.cn/bgjz/list.htm",
+      "pagination_mode": "forward",
+      "max_pages": 1,
+      "headers": {
+        "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
+        "host": "as.nju.edu.cn"
+      },
+      "selectors": {
+        "item_container": ".wp_article_list li.list_item",
         "date": ".Article_PublishDate",
         "title": ".Article_Title a",
         "url": ".Article_Title a"
@@ -39,17 +57,15 @@
   ],
   "detail_selectors": [
     {
-      "base_url": "https://med.nju.edu.cn",
+      "base_url": "https://as.nju.edu.cn",
       "meta_selector": {
         "item_container": ".infobox",
-        "publisher": ".arti_publisher",
-        "views": ".arti_views",
-        "publish_time": ".arti_update"
+        "publisher": ".arti_update",
+        "views": ".arti_views"
       },
       "text_selector": {
         "item_container": ".infobox",
-        "content": ".wp_articlecontent",
-        "title": ".arti_title"
+        "content": ".wp_articlecontent"
       },
       "img_selector": {
         "item_container": ".infobox",
@@ -67,8 +83,8 @@
       },
       "embedded_pdf_selector": {
         "item_container": ".infobox",
-        "viewer": ".wp_articlecontent iframe[src*=\".pdf\"]",
-        "download_link": ".wp_articlecontent a[href$=\".pdf\"]"
+        "viewer": ".wp_articlecontent iframe.wp_pdf_player",
+        "download_link": ".wp_articlecontent img[src$=\"icon_pdf.gif\"] + a"
       }
     }
   ]

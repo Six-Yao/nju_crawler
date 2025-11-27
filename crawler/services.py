@@ -89,6 +89,7 @@ pytesseract.pytesseract.tesseract_cmd = TESSERACT_CMD
 
 # 列表页翻页URL正则匹配
 PAGINATION_PATTERN = re.compile(r"(list)(\d+)(\.htm)$", re.IGNORECASE)
+PARAGRAPH_CLOSE_PATTERN = re.compile(r"</p\s*>", re.IGNORECASE)
 
 
 
@@ -178,7 +179,8 @@ def parse_list(html: str, selectors: dict, base_url: str) -> List[dict]:
     用CSS选择器解析列表页，提取每条公告/文章的基本信息。
     返回：包含title、date、url、type的字典列表。
     """
-    soup = BeautifulSoup(html, "lxml")
+    html_with_newlines = PARAGRAPH_CLOSE_PATTERN.sub("</p>\n", html)
+    soup = BeautifulSoup(html_with_newlines, "lxml")
     items = soup.select(selectors["item_container"])
     results = []
     for item in items:
@@ -580,30 +582,53 @@ def parse_wechat_article(html: str) -> tuple[str, List[Attachments]]:
     return full_text, []
 
 
-async def parse_detail_page(html: str, base_url: str, headers: dict) -> tuple[str, List[Attachments]]:
+def resolve_detail_selector(detail_url: str) -> Optional[dict]:
+    """Find the detail selector config that matches the given URL hostname/path."""
+    if not DETAIL_SELECTORS:
+        return None
+
+    parsed_detail = urlparse(detail_url)
+    detail_host = parsed_detail.netloc
+    detail_path = parsed_detail.path or "/"
+
+    for cfg in DETAIL_SELECTORS:
+        cfg_url = cfg.get("base_url") or ""
+        parsed_cfg = urlparse(cfg_url)
+        cfg_host = parsed_cfg.netloc or cfg_url
+
+        if detail_host and cfg_host and detail_host != cfg_host:
+            continue
+
+        cfg_path = parsed_cfg.path or ""
+        if cfg_path and not detail_path.startswith(cfg_path):
+            continue
+
+        return cfg
+
+    return DETAIL_SELECTORS[0]
+
+
+async def parse_detail_page(html: str, detail_url: str, headers: dict) -> tuple[str, List[Attachments]]:
     """Parse a detail page and return aggregated text plus attachment metadata."""
-    if "mp.weixin.qq.com" in base_url:
+    if "mp.weixin.qq.com" in detail_url:
         return parse_wechat_article(html)
 
     soup = BeautifulSoup(html, "lxml")
-    # 匹配当前 base_url 对应的 selector 配置
-    selector_cfg = next((cfg for cfg in DETAIL_SELECTORS if cfg["base_url"] in base_url), None)
-    if not selector_cfg:
-        selector_cfg = DETAIL_SELECTORS[0]  # 默认用第一个
+    selector_cfg = resolve_detail_selector(detail_url) or {}
 
     text_content = extract_text_content(soup, selector_cfg.get("text_selector"))
-    image_texts = await extract_image_texts(soup, selector_cfg.get("img_selector"), base_url, headers)
+    image_texts = await extract_image_texts(soup, selector_cfg.get("img_selector"), detail_url, headers)
     pdf_attachments = await extract_file_texts(
-        soup, selector_cfg.get("pdf_selector"), base_url, headers, allowed_ext=(".pdf",)
+        soup, selector_cfg.get("pdf_selector"), detail_url, headers, allowed_ext=(".pdf",)
     )
     doc_attachments = await extract_file_texts(
-        soup, selector_cfg.get("doc_selector"), base_url, headers, allowed_ext=(".docx",)
+        soup, selector_cfg.get("doc_selector"), detail_url, headers, allowed_ext=(".docx",)
     )
     embedded_pdf = await extract_embedded_pdf_attachment(
-        soup, selector_cfg.get("embedded_pdf_selector"), base_url, headers
+        soup, selector_cfg.get("embedded_pdf_selector"), detail_url, headers
     )
     embedded_pdf_script = await extract_script_embedded_pdf_attachments(
-        soup, selector_cfg.get("embedded_pdf_selector"), base_url, headers
+        soup, selector_cfg.get("embedded_pdf_selector"), detail_url, headers
     )
 
     attachments = pdf_attachments + doc_attachments + embedded_pdf + embedded_pdf_script

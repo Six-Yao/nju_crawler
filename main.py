@@ -39,6 +39,19 @@ app.add_middleware(
     allow_headers=["*"],       # 允许所有请求头
 )
 
+# 静态前端与首页挂载：由后端同端口提供 index.html
+# 静态资源（若后续有 js/css/img）可放在 ./static 目录并自动挂载
+static_dir = os.path.join(os.path.dirname(__file__), "static")
+if os.path.isdir(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+@app.get("/")
+def serve_index():
+    index_path = os.path.join(os.path.dirname(__file__), "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path, media_type="text/html; charset=utf-8")
+    return {"message": "index.html 未找到，请将前端文件放在项目根目录。"}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

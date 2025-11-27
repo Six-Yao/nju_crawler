@@ -1,0 +1,91 @@
+{
+  "sources": [
+    {
+      "id": "dqkxxy_xyxw",
+      "name": "大气科学学院-学院新闻",
+      "base_url": "https://as.nju.edu.cn",
+      "list_url": "https://as.nju.edu.cn/xyxw/list.htm",
+      "pagination_mode": "forward",
+      "max_pages": 1,
+      "headers": {
+        "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
+        "host": "as.nju.edu.cn"
+      },
+      "selectors": {
+        "item_container": ".wp_article_list li.list_item",
+        "date": ".Article_PublishDate",
+        "title": ".Article_Title a",
+        "url": ".Article_Title a"
+      }
+    },
+    {
+      "id": "dqkxxy_tzgg",
+      "name": "大气科学学院-通知公告",
+      "base_url": "https://as.nju.edu.cn",
+      "list_url": "https://as.nju.edu.cn/tzgg/list.htm",
+      "pagination_mode": "forward",
+      "max_pages": 1,
+      "headers": {
+        "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
+        "host": "as.nju.edu.cn"
+      },
+      "selectors": {
+        "item_container": ".wp_article_list li.list_item",
+        "date": ".Article_PublishDate",
+        "title": ".Article_Title a",
+        "url": ".Article_Title a"
+      }
+    },
+    {
+      "id": "dqkxxy_bgjz",
+      "name": "大气科学学院-学术活动",
+      "base_url": "https://as.nju.edu.cn",
+      "list_url": "https://as.nju.edu.cn/bgjz/list.htm",
+      "pagination_mode": "forward",
+      "max_pages": 1,
+      "headers": {
+        "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",
+        "host": "as.nju.edu.cn"
+      },
+      "selectors": {
+        "item_container": ".wp_article_list li.list_item",
+        "date": ".Article_PublishDate",
+        "title": ".Article_Title a",
+        "url": ".Article_Title a"
+      }
+    }
+  ],
+  "detail_selectors": [
+    {
+      "base_url": "https://as.nju.edu.cn",
+      "meta_selector": {
+        "item_container": ".infobox",
+        "publisher": ".arti_update",
+        "views": ".arti_views"
+      },
+      "text_selector": {
+        "item_container": ".infobox",
+        "content": ".wp_articlecontent"
+      },
+      "img_selector": {
+        "item_container": ".infobox",
+        "images": ".wp_articlecontent img[src]"
+      },
+      "pdf_selector": {
+        "item_container": ".infobox",
+        "files": ".wp_articlecontent a[href$=\".pdf\"]",
+        "name": ".wp_articlecontent a[href$=\".pdf\"]"
+      },
+      "doc_selector": {
+        "item_container": ".infobox",
+        "files": ".wp_articlecontent a[href$=\".doc\"], .wp_articlecontent a[href$=\".docx\"]",
+        "name": ".wp_articlecontent a[href$=\".doc\"], .wp_articlecontent a[href$=\".docx\"]"
+      },
+      "embedded_pdf_selector": {
+        "item_container": ".infobox",
+        "viewer": ".wp_articlecontent iframe.wp_pdf_player",
+        "download_link": ".wp_articlecontent img[src$=\"icon_pdf.gif\"] + a"
+      }
+    }
+  ]
+}

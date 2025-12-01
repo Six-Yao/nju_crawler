@@ -69,14 +69,25 @@
             -ms-overflow-style: none; /* IE and Edge */
             scrollbar-width: none; /* Firefox */
         }
+        /* 自定义滚动条 */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #d1d5db;
+            border-radius: 20px;
+        }
     </style>
 </head>
 <body class="bg-gray-50 font-sans">
 
-    <div id="app" class="min-h-screen">
+    <div id="app" class="h-screen flex flex-col overflow-hidden">
         
         <!-- 头部 -->
-        <header class="bg-white shadow-sm sticky top-0 z-20">
+        <header class="bg-white shadow-sm flex-shrink-0">
             <div class="container mx-auto px-4 py-4 flex justify-between items-center">
                 <h1 class="text-2xl md:text-3xl font-bold nju-purple">
                     南京大学教育资讯
@@ -91,7 +102,7 @@
         </header>
 
         <!-- 规则与操作栏 -->
-        <div class="container mx-auto p-4 bg-white md:rounded-b-lg shadow-md mb-6 sticky top-[80px] z-10">
+        <div class="container mx-auto p-4 bg-white md:rounded-b-lg shadow-md my-4 flex-shrink-0">
             <div class="flex justify-between items-center gap-4 mb-4">
                 <button
                     @click="openRuleModal"
@@ -151,10 +162,10 @@
         </div>
 
         <!-- 主内容区 -->
-        <main class="container mx-auto p-4 flex flex-col md:flex-row gap-6">
+        <main class="container mx-auto p-4 flex-1 min-h-0 flex flex-col md:flex-row gap-6 overflow-hidden">
             
             <!-- 左侧内容列表 (手机端全宽) -->
-            <div class="w-full md:w-2/5 lg:w-1/3 h-full">
+            <div class="w-full md:w-2/5 lg:w-1/3 h-full overflow-y-auto pr-1 custom-scrollbar">
                 <!-- 加载状态 -->
                 <div v-if="isLoading" class="flex justify-center items-center h-64">
                     <div class="loader"></div>
@@ -226,13 +237,13 @@
             </div>
 
             <!-- 右侧预览窗口 (手机端隐藏) -->
-            <div class="w-full md:w-3/5 lg:w-2/3 hidden md:block">
-                <div class="bg-white rounded-lg shadow-lg h-[calc(100vh-200px)] sticky top-[164px] flex flex-col">
+            <div class="w-full md:w-3/5 lg:w-2/3 hidden md:block h-full">
+                <div class="bg-white rounded-lg shadow-lg h-full flex flex-col">
                     <div class="p-4 border-b border-gray-200">
                         <h3 class="text-lg font-semibold text-gray-800">内容预览</h3>
                     </div>
                     
-                    <div v-if="selectedItem" class="flex-1 p-5 overflow-y-auto scrollbar-hide preview-content" v-html="renderedContent">
+                    <div v-if="selectedItem" class="flex-1 p-5 overflow-y-auto custom-scrollbar preview-content" v-html="renderedContent">
                         <!-- 内容通过 v-html 渲染 -->
                     </div>
 
@@ -295,18 +306,18 @@
 
                                 <!-- 2. 信息源 -->
                                 <div>
-                                    <div class="flex justify-between items-center mb-2">
-                                        <h4 class="text-sm font-bold text-gray-700 border-l-4 border-purple-600 pl-2">2. 信息源</h4>
-                                        <div class="space-x-2 text-xs">
-                                            <button @click="selectAllSources" class="text-purple-600 hover:underline">全选</button>
-                                            <button @click="deselectAllSources" class="text-purple-600 hover:underline">清空</button>
-                                        </div>
-                                    </div>
+                                    <h4 class="text-sm font-bold text-gray-700 mb-2 border-l-4 border-purple-600 pl-2">2. 信息源</h4>
                                     
                                     <div class="flex flex-col md:flex-row gap-4 h-60">
                                         <!-- 官网 -->
                                         <div class="flex-1 border rounded-md p-2 flex flex-col">
-                                            <div class="text-xs font-semibold text-gray-500 mb-2 text-center bg-gray-50 py-1">官网 / 学院网站</div>
+                                            <div class="flex justify-between items-center mb-2 bg-gray-50 px-2 py-1 rounded">
+                                                <span class="text-xs font-semibold text-gray-500">官网 / 学院网站</span>
+                                                <div class="space-x-2 text-xs">
+                                                    <button @click="selectAllOfficial" class="text-purple-600 hover:underline">全选</button>
+                                                    <button @click="deselectAllOfficial" class="text-purple-600 hover:underline">清空</button>
+                                                </div>
+                                            </div>
                                             <div class="overflow-y-auto flex-1 space-y-1">
                                                 <div v-for="source in officialSources" :key="source.id" class="flex items-center">
                                                     <input :id="'rule-cb-' + source.id" type="checkbox" :value="source.id" v-model="currentRule.sourceIds" class="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
@@ -316,7 +327,13 @@
                                         </div>
                                         <!-- 公众号 -->
                                         <div class="flex-1 border rounded-md p-2 flex flex-col">
-                                            <div class="text-xs font-semibold text-gray-500 mb-2 text-center bg-gray-50 py-1">微信公众号</div>
+                                            <div class="flex justify-between items-center mb-2 bg-gray-50 px-2 py-1 rounded">
+                                                <span class="text-xs font-semibold text-gray-500">微信公众号</span>
+                                                <div class="space-x-2 text-xs">
+                                                    <button @click="selectAllWechat" class="text-purple-600 hover:underline">全选</button>
+                                                    <button @click="deselectAllWechat" class="text-purple-600 hover:underline">清空</button>
+                                                </div>
+                                            </div>
                                             <div class="overflow-y-auto flex-1 space-y-1">
                                                 <div v-for="source in wechatSources" :key="source.id" class="flex items-center">
                                                     <input :id="'rule-cb-' + source.id" type="checkbox" :value="source.id" v-model="currentRule.sourceIds" class="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
@@ -547,12 +564,26 @@
                     currentRule.value.keywords.splice(index, 1);
                 };
 
-                const selectAllSources = () => {
-                    currentRule.value.sourceIds = sourceList.value.map(s => s.id);
+                const selectAllOfficial = () => {
+                    const officialIds = officialSources.value.map(s => s.id);
+                    const newIds = [...new Set([...currentRule.value.sourceIds, ...officialIds])];
+                    currentRule.value.sourceIds = newIds;
                 };
 
-                const deselectAllSources = () => {
-                    currentRule.value.sourceIds = [];
+                const deselectAllOfficial = () => {
+                    const officialIds = new Set(officialSources.value.map(s => s.id));
+                    currentRule.value.sourceIds = currentRule.value.sourceIds.filter(id => !officialIds.has(id));
+                };
+
+                const selectAllWechat = () => {
+                    const wechatIds = wechatSources.value.map(s => s.id);
+                    const newIds = [...new Set([...currentRule.value.sourceIds, ...wechatIds])];
+                    currentRule.value.sourceIds = newIds;
+                };
+
+                const deselectAllWechat = () => {
+                    const wechatIds = new Set(wechatSources.value.map(s => s.id));
+                    currentRule.value.sourceIds = currentRule.value.sourceIds.filter(id => !wechatIds.has(id));
                 };
 
                 const saveRule = () => {
@@ -683,17 +714,8 @@
 
                         results.value = merged;
                         
-                        // 默认展开第一个有内容的分类
-                        // 需要等待 groupedResults 更新，但在 Vue 中 computed 是响应式的
-                        // 这里我们手动检查一下
-                        setTimeout(() => {
-                             const firstSourceWithItems = groupedResults.value.find(g => g.items.length > 0);
-                             if (firstSourceWithItems) {
-                                 activeSourceIds.value = [firstSourceWithItems.id];
-                             } else {
-                                 activeSourceIds.value = [];
-                             }
-                        }, 0);
+                        // 默认不展开任何分类
+                        activeSourceIds.value = [];
 
                     } catch (err) {
                         console.error("API 请求失败:", err);
@@ -792,8 +814,10 @@
                     addKeyword,
                     removeKeyword,
                     handleBackspace,
-                    selectAllSources,
-                    deselectAllSources,
+                    selectAllOfficial,
+                    deselectAllOfficial,
+                    selectAllWechat,
+                    deselectAllWechat,
                     saveRule,
                     removeRule,
                     getSourceNames,
